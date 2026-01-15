@@ -1,0 +1,1884 @@
+{
+  "info": {
+    "_postman_id": "95581aee-d996-42fa-9706-88b5496c6a14",
+    "name": "Hotel Booking System — E2E сценарии (Gateway)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Автопроверка основных сценариев: setup/auth, security, hotels/rooms, booking (success/conflict/idempotency), validation, internal security, data isolation."
+  },
+  "item": [
+    {
+      "name": "00-Setup & Health",
+      "item": [
+        {
+          "name": "00.0 Init Dates & IDs + Gateway Health",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Init dynamic dates & requestIds once per run",
+                  "function fmt(d){ return d.toISOString().slice(0,10); }",
+                  "const now = new Date();",
+                  "const tomorrow = new Date(now.getTime()); tomorrow.setDate(tomorrow.getDate()+1);",
+                  "const end = new Date(tomorrow.getTime()); end.setDate(end.getDate()+5);",
+                  "const start2 = new Date(tomorrow.getTime()); start2.setDate(start2.getDate()+10);",
+                  "const end2 = new Date(start2.getTime()); end2.setDate(end2.getDate()+5);",
+                  "pm.environment.set('startDate', fmt(tomorrow));",
+                  "pm.environment.set('endDate', fmt(end));",
+                  "pm.environment.set('startDate2', fmt(start2));",
+                  "pm.environment.set('endDate2', fmt(end2));",
+                  "pm.environment.set('reqId_ok', 'rq-ok-' + Date.now());",
+                  "pm.environment.set('reqId_conflict', 'rq-conflict-' + Date.now());",
+                  "pm.environment.set('reqId_idem', 'rq-idem-' + Date.now());",
+                  "// Clear run-time vars",
+                  "['hotelId','roomId','bookingId_ok','bookingUid_ok','bookingId_idem','timesBooked_before','timesBooked_before_idem','tokenUser','tokenAdmin','userId','adminId','otherUserToken','otherUserId'].forEach(k=>pm.environment.unset(k));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Gateway health is 200', function(){ pm.response.to.have.status(200); });",
+                  "pm.test('Dates and requestIds initialized', function(){",
+                  "  pm.expect(pm.environment.get('startDate')).to.match(/^\\d{4}-\\d{2}-\\d{2}$/);",
+                  "  pm.expect(pm.environment.get('reqId_idem')).to.include('rq-idem-');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/actuator/health",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.1 Gateway health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/actuator/health",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.2 Booking-service health (direct)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingService}}/actuator/health",
+              "host": [
+                "{{bookingService}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.3 Hotel-service health (direct)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{hotelService}}/actuator/health",
+              "host": [
+                "{{hotelService}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01-Auth (JWT)",
+      "item": [
+        {
+          "name": "01.1 Auth USER",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j).to.have.property('token');",
+                  "pm.environment.set('tokenUser', j.token);",
+                  "if (j.userId !== undefined) pm.environment.set('userId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/user/auth",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "auth"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{userEmail}}\", \"password\": \"{{userPassword}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "01.2 Auth ADMIN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j).to.have.property('token');",
+                  "pm.environment.set('tokenAdmin', j.token);",
+                  "if (j.userId !== undefined) pm.environment.set('adminId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/user/auth",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "auth"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "01.3 Auth negative (wrong password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401/403 on invalid credentials', ()=>pm.expect([401,403]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/user/auth",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "auth"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"wrong\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "01.4 X-Request-Id returned by API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "pm.test('X-Request-Id present', ()=>pm.expect(pm.response.headers.get('X-Request-Id')).to.be.ok);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02-Security basics",
+      "item": [
+        {
+          "name": "02.1 401 without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', ()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gateway}}/api/hotels",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02.2 403 USER cannot create hotel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', ()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Forbidden Hotel\", \"address\": \"Nowhere\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03-Hotels",
+      "item": [
+        {
+          "name": "03.1 USER list hotels",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03.2 ADMIN create hotel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', ()=>pm.expect([200,201]).to.include(pm.response.code));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j).to.have.property('id');",
+                  "pm.environment.set('hotelId', j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Postman Hotel\", \"address\": \"Test City\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03.3 USER get hotel by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels/{{hotelId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels",
+                "{{hotelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03.4 ADMIN update hotel (PATCH)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j).to.have.property('id');",
+                  "pm.expect(j.address || '').to.include('Test City');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/hotels/{{hotelId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "hotels",
+                "{{hotelId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"address\": \"Test City 2\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04-Rooms",
+      "item": [
+        {
+          "name": "04.1 ADMIN add room to hotel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', ()=>pm.expect([200,201]).to.include(pm.response.code));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j).to.have.property('id');",
+                  "pm.environment.set('roomId', j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms?hotelId={{hotelId}}&number=909&available=true",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "{{hotelId}}"
+                },
+                {
+                  "key": "number",
+                  "value": "909"
+                },
+                {
+                  "key": "available",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04.2 USER get room (save timesBooked_before)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "if (j.timesBooked !== undefined) pm.environment.set('timesBooked_before', j.timesBooked);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04.3 USER recommend",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/recommend?start={{startDate}}&end={{endDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "recommend"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{startDate}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{endDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04.4 USER list rooms by period",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms?start={{startDate}}&end={{endDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{startDate}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{endDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04.5 USER cannot stats (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', ()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/stats?hotelId={{hotelId}}&start={{startDate}}&end={{endDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "stats"
+              ],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "{{hotelId}}"
+                },
+                {
+                  "key": "start",
+                  "value": "{{startDate}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{endDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04.6 ADMIN stats (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/stats?hotelId={{hotelId}}&start={{startDate}}&end={{endDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "stats"
+              ],
+              "query": [
+                {
+                  "key": "hotelId",
+                  "value": "{{hotelId}}"
+                },
+                {
+                  "key": "start",
+                  "value": "{{startDate}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{endDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05-Booking success",
+      "item": [
+        {
+          "name": "05.1 USER create booking (success)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j.status).to.eql('CONFIRMED');",
+                  "pm.environment.set('bookingId_ok', j.id);",
+                  "pm.environment.set('bookingUid_ok', j.bookingUid);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "{{reqId_ok}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate}}\", \"endDate\": \"{{endDate}}\", \"autoSelect\": false, \"roomId\": {{roomId}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05.2 USER get booking by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking/{{bookingId_ok}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "{{bookingId_ok}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05.3 USER room timesBooked increased",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "const before = parseInt(pm.environment.get('timesBooked_before')||'0',10);",
+                  "if (j.timesBooked !== undefined){ pm.test('timesBooked increased by 1', ()=>pm.expect(j.timesBooked).to.eql(before+1)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05.4 USER list bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/bookings?page=0&size=10&sort=createdAt,desc",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt,desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06-Booking conflict",
+      "item": [
+        {
+          "name": "06.1 USER booking conflict (same room & dates)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', ()=>pm.response.to.have.status(409));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j.status).to.eql(409);",
+                  "pm.expect(j.path).to.eql('/api/booking');",
+                  "pm.expect(j.requestId).to.eql(pm.environment.get('reqId_conflict'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "{{reqId_conflict}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate}}\", \"endDate\": \"{{endDate}}\", \"autoSelect\": false, \"roomId\": {{roomId}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "06.2 USER list bookings (should contain CANCELLED)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/bookings?page=0&size=10&sort=createdAt,desc",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt,desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "06.3 USER timesBooked not increased by conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "const before = parseInt(pm.environment.get('timesBooked_before')||'0',10);",
+                  "if (j.timesBooked !== undefined){ pm.test('timesBooked still before+1', ()=>pm.expect(j.timesBooked).to.eql(before+1)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07-Cancel & Rebook",
+      "item": [
+        {
+          "name": "07.1 USER cancel booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/204', ()=>pm.expect([200,204]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking/{{bookingId_ok}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "{{bookingId_ok}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07.2 USER booking is CANCELLED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.expect(j.status).to.eql('CANCELLED');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking/{{bookingId_ok}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "{{bookingId_ok}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07.3 USER timesBooked rolled back after cancel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "const before = parseInt(pm.environment.get('timesBooked_before')||'0',10);",
+                  "if (j.timesBooked !== undefined){ pm.test('timesBooked back to before', ()=>pm.expect(j.timesBooked).to.eql(before)); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07.4 USER rebook after cancel (should succeed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.expect(j.status).to.eql('CONFIRMED');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "rq-rebook-{{reqId_ok}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate}}\", \"endDate\": \"{{endDate}}\", \"autoSelect\": false, \"roomId\": {{roomId}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08-Idempotency (X-Request-Id)",
+      "item": [
+        {
+          "name": "08.1 USER get room (save timesBooked_before_idem)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "if (j.timesBooked !== undefined) pm.environment.set('timesBooked_before_idem', j.timesBooked);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08.2 USER create booking (idempotency baseline)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "pm.expect(j.status).to.eql('CONFIRMED');",
+                  "pm.environment.set('bookingId_idem', j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "{{reqId_idem}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate2}}\", \"endDate\": \"{{endDate2}}\", \"autoSelect\": false, \"roomId\": {{roomId}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08.3 USER repeat same requestId (should 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', ()=>pm.response.to.have.status(409));",
+                  "const j=pm.response.json();",
+                  "pm.expect(j.requestId).to.eql(pm.environment.get('reqId_idem'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Request-Id",
+                "value": "{{reqId_idem}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate2}}\", \"endDate\": \"{{endDate2}}\", \"autoSelect\": false, \"roomId\": {{roomId}}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08.4 USER timesBooked did not change on idempotency repeat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', ()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();",
+                  "const before=parseInt(pm.environment.get('timesBooked_before_idem')||'0',10);",
+                  "if (j.timesBooked !== undefined){",
+                  "  pm.test('timesBooked = before + 1', ()=>pm.expect(j.timesBooked).to.eql(before+1));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09-Validation (400)",
+      "item": [
+        {
+          "name": "09.1 Booking invalid dates (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', ()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{endDate}}\", \"endDate\": \"{{startDate}}\", \"autoSelect\": true, \"roomId\": null}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "09.2 Recommend invalid dates (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', ()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/recommend?start={{endDate}}&end={{startDate}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "recommend"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{endDate}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{startDate}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10-Internal endpoints security",
+      "item": [
+        {
+          "name": "10.1 Gateway should not expose internal confirm endpoint (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/rooms/{{roomId}}/confirm-availability",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}",
+                "confirm-availability"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10.2 Direct hotel-service confirm with USER token -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', ()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenUser}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{hotelService}}/api/rooms/{{roomId}}/confirm-availability",
+              "host": [
+                "{{hotelService}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{roomId}}",
+                "confirm-availability"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"startDate\": \"{{startDate}}\", \"endDate\": \"{{endDate}}\", \"bookingUid\": \"test\", \"requestId\": \"test\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11-Data isolation",
+      "item": [
+        {
+          "name": "11.1 Register second user (gets token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', ()=>pm.expect([200,201]).to.include(pm.response.code));",
+                  "const j=pm.response.json();",
+                  "if (j.token) pm.environment.set('otherUserToken', j.token);",
+                  "if (j.userId !== undefined) pm.environment.set('otherUserId', j.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/user/register",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"User Two\",\n  \"email\": \"user2_{{$timestamp}}@local\",\n  \"password\": \"user123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11.2 Second user cannot read first user booking (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{otherUserToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway}}/api/booking/{{bookingId_idem}}",
+              "host": [
+                "{{gateway}}"
+              ],
+              "path": [
+                "api",
+                "booking",
+                "{{bookingId_idem}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

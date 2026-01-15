@@ -1,0 +1,1329 @@
+{
+	"id": "ad2f805b-cae3-4a67-ba27-971e8aa7287d",
+	"name": "Hotel Booking System — E2E сценарии (Gateway)",
+	"timestamp": "2025-12-24T22:37:08.197Z",
+	"collection_id": "50726575-f86f545b-2776-43aa-8e5d-265dfc2c3d83",
+	"folder_id": 0,
+	"environment_id": "50726575-fddfeb8a-b2e3-4b2f-a5f9-0321fd806b00",
+	"totalPass": 47,
+	"delay": 0,
+	"persist": true,
+	"status": "finished",
+	"startedAt": "2025-12-24T22:37:01.313Z",
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "c5d56248-a047-4cc0-9fa1-bbaf499b74d6",
+			"name": "00.0 Init Dates & IDs + Gateway Health",
+			"url": "http://localhost:8080/actuator/health",
+			"time": 258,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"Gateway health is 200": true,
+				"Dates and requestIds initialized": true
+			},
+			"testPassFailCounts": {
+				"Gateway health is 200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"Dates and requestIds initialized": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				258
+			],
+			"allTests": [
+				{
+					"Gateway health is 200": true,
+					"Dates and requestIds initialized": true
+				}
+			]
+		},
+		{
+			"id": "7f095456-92a9-4e66-9924-2a5fdc2bdf4f",
+			"name": "00.1 Gateway health",
+			"url": "http://localhost:8080/actuator/health",
+			"time": 9,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				9
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "dc88873e-3080-45f2-b882-e082ded81e7d",
+			"name": "00.2 Booking-service health (direct)",
+			"url": "http://localhost:8081/actuator/health",
+			"time": 46,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				46
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "92c667ea-19b1-42f3-8715-405986070524",
+			"name": "00.3 Hotel-service health (direct)",
+			"url": "http://localhost:8082/actuator/health",
+			"time": 47,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				47
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "9d76cab3-e2d5-4d55-b77c-f1dc82f7fc68",
+			"name": "01.1 Auth USER",
+			"url": "http://localhost:8080/api/user/auth",
+			"time": 556,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				556
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "e499db67-b5c8-4da9-9fd7-af62ba71e06e",
+			"name": "01.2 Auth ADMIN",
+			"url": "http://localhost:8080/api/user/auth",
+			"time": 79,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				79
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "fb136f30-4747-4c4b-855f-03e3a42bde2f",
+			"name": "01.3 Auth negative (wrong password)",
+			"url": "http://localhost:8080/api/user/auth",
+			"time": 85,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"401/403 on invalid credentials": true
+			},
+			"testPassFailCounts": {
+				"401/403 on invalid credentials": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				85
+			],
+			"allTests": [
+				{
+					"401/403 on invalid credentials": true
+				}
+			]
+		},
+		{
+			"id": "38c63657-9e3b-46d3-9624-3c53442d08a6",
+			"name": "01.4 X-Request-Id returned by API",
+			"url": "http://localhost:8080/api/hotels",
+			"time": 200,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true,
+				"X-Request-Id present": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"X-Request-Id present": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				200
+			],
+			"allTests": [
+				{
+					"200": true,
+					"X-Request-Id present": true
+				}
+			]
+		},
+		{
+			"id": "4b7abd2d-634e-4791-81d4-22929e5c994c",
+			"name": "02.1 401 without token",
+			"url": "http://localhost:8080/api/hotels",
+			"time": 14,
+			"responseCode": {
+				"code": 401,
+				"name": "Unauthorized"
+			},
+			"tests": {
+				"401": true
+			},
+			"testPassFailCounts": {
+				"401": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"401": true
+				}
+			]
+		},
+		{
+			"id": "6a0b2bf7-2023-490f-b193-d7839581aaf6",
+			"name": "02.2 403 USER cannot create hotel",
+			"url": "http://localhost:8080/api/hotels",
+			"time": 15,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"403": true
+			},
+			"testPassFailCounts": {
+				"403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"403": true
+				}
+			]
+		},
+		{
+			"id": "9f733ad2-ab7c-4f14-ba66-42a468fc217d",
+			"name": "03.1 USER list hotels",
+			"url": "http://localhost:8080/api/hotels",
+			"time": 16,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				16
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "9b45fcb8-423b-408e-8618-e3408bf6ecdc",
+			"name": "03.2 ADMIN create hotel",
+			"url": "http://localhost:8080/api/hotels",
+			"time": 71,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200/201": true
+			},
+			"testPassFailCounts": {
+				"200/201": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				71
+			],
+			"allTests": [
+				{
+					"200/201": true
+				}
+			]
+		},
+		{
+			"id": "dc115486-c9bb-4878-ba43-2f907d5a647e",
+			"name": "03.3 USER get hotel by id",
+			"url": "http://localhost:8080/api/hotels/4",
+			"time": 28,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				28
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "f866b553-dafa-4dab-a331-d8c71e48f2b8",
+			"name": "03.4 ADMIN update hotel (PATCH)",
+			"url": "http://localhost:8080/api/hotels/4",
+			"time": 27,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				27
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "90393ec9-c622-4931-86e5-7bbb94f6a087",
+			"name": "04.1 ADMIN add room to hotel",
+			"url": "http://localhost:8080/api/rooms?hotelId=4&number=909&available=true",
+			"time": 25,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200/201": true
+			},
+			"testPassFailCounts": {
+				"200/201": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				25
+			],
+			"allTests": [
+				{
+					"200/201": true
+				}
+			]
+		},
+		{
+			"id": "21b5fa6d-acc3-4d62-ba91-db77f4c77d13",
+			"name": "04.2 USER get room (save timesBooked_before)",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 24,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				24
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "6eb4dd85-8864-4a6e-94d3-370730b73db2",
+			"name": "04.3 USER recommend",
+			"url": "http://localhost:8080/api/rooms/recommend?start=2025-12-25&end=2025-12-30",
+			"time": 139,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				139
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "ce785efb-cd7a-4bcf-9431-d876ffa36e2e",
+			"name": "04.4 USER list rooms by period",
+			"url": "http://localhost:8080/api/rooms?start=2025-12-25&end=2025-12-30",
+			"time": 34,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				34
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "812b3495-92e6-4c90-b42a-636365f08401",
+			"name": "04.5 USER cannot stats (403)",
+			"url": "http://localhost:8080/api/rooms/stats?hotelId=4&start=2025-12-25&end=2025-12-30",
+			"time": 11,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"403": true
+			},
+			"testPassFailCounts": {
+				"403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				11
+			],
+			"allTests": [
+				{
+					"403": true
+				}
+			]
+		},
+		{
+			"id": "0cdd299c-ff5f-4e4c-a1b7-3802e3b97d50",
+			"name": "04.6 ADMIN stats (200)",
+			"url": "http://localhost:8080/api/rooms/stats?hotelId=4&start=2025-12-25&end=2025-12-30",
+			"time": 36,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "19939377-28c6-4424-9dd4-93e21a4970f6",
+			"name": "05.1 USER create booking (success)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 448,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				448
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "4cdca12e-f203-4734-b9dd-751e4e74fe2a",
+			"name": "05.2 USER get booking by id",
+			"url": "http://localhost:8080/api/booking/1",
+			"time": 36,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "c1151268-66c3-472e-b972-ead382031781",
+			"name": "05.3 USER room timesBooked increased",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 13,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true,
+				"timesBooked increased by 1": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"timesBooked increased by 1": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"200": true,
+					"timesBooked increased by 1": true
+				}
+			]
+		},
+		{
+			"id": "fa58e034-8afe-4be4-b711-68cbad79c352",
+			"name": "05.4 USER list bookings",
+			"url": "http://localhost:8080/api/bookings?page=0&size=10&sort=createdAt,desc",
+			"time": 46,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				46
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "c64b360b-2665-4085-a740-d9ade7baf4be",
+			"name": "06.1 USER booking conflict (same room & dates)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 96,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"409": true
+			},
+			"testPassFailCounts": {
+				"409": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				96
+			],
+			"allTests": [
+				{
+					"409": true
+				}
+			]
+		},
+		{
+			"id": "a3f4736a-c49f-4770-9ce8-a1c4c272aa07",
+			"name": "06.2 USER list bookings (should contain CANCELLED)",
+			"url": "http://localhost:8080/api/bookings?page=0&size=10&sort=createdAt,desc",
+			"time": 18,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				18
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "b0b89a88-0521-4ec0-b572-be576c8d87f3",
+			"name": "06.3 USER timesBooked not increased by conflict",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 17,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true,
+				"timesBooked still before+1": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"timesBooked still before+1": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"200": true,
+					"timesBooked still before+1": true
+				}
+			]
+		},
+		{
+			"id": "acb8887f-bc6d-454e-9a70-5a79cb7935f0",
+			"name": "07.1 USER cancel booking",
+			"url": "http://localhost:8080/api/booking/1",
+			"time": 57,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200/204": true
+			},
+			"testPassFailCounts": {
+				"200/204": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				57
+			],
+			"allTests": [
+				{
+					"200/204": true
+				}
+			]
+		},
+		{
+			"id": "e7b2a343-c091-4b65-a23c-82769afc8154",
+			"name": "07.2 USER booking is CANCELLED",
+			"url": "http://localhost:8080/api/booking/1",
+			"time": 15,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "82ffb4d6-496d-4037-8c93-9877dba36db0",
+			"name": "07.3 USER timesBooked rolled back after cancel",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 13,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true,
+				"timesBooked back to before": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"timesBooked back to before": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"200": true,
+					"timesBooked back to before": true
+				}
+			]
+		},
+		{
+			"id": "52843939-ecfb-423d-8ba3-9f38e079da75",
+			"name": "07.4 USER rebook after cancel (should succeed)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 53,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				53
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "e422371d-9b92-442f-82f3-50e4032c900e",
+			"name": "08.1 USER get room (save timesBooked_before_idem)",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 12,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "789fe21f-2e2a-46f0-bd06-fba70d0e1207",
+			"name": "08.2 USER create booking (idempotency baseline)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 52,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				52
+			],
+			"allTests": [
+				{
+					"200": true
+				}
+			]
+		},
+		{
+			"id": "cd1a0827-1d01-4e35-8e99-afffa3370b20",
+			"name": "08.3 USER repeat same requestId (should 409)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 36,
+			"responseCode": {
+				"code": 409,
+				"name": "Conflict"
+			},
+			"tests": {
+				"409": true
+			},
+			"testPassFailCounts": {
+				"409": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				36
+			],
+			"allTests": [
+				{
+					"409": true
+				}
+			]
+		},
+		{
+			"id": "15eb548f-b15c-4b65-b49d-d1dc4ff4b01c",
+			"name": "08.4 USER timesBooked did not change on idempotency repeat",
+			"url": "http://localhost:8080/api/rooms/10",
+			"time": 14,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200": true,
+				"timesBooked = before + 1": true
+			},
+			"testPassFailCounts": {
+				"200": {
+					"pass": 1,
+					"fail": 0
+				},
+				"timesBooked = before + 1": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				14
+			],
+			"allTests": [
+				{
+					"200": true,
+					"timesBooked = before + 1": true
+				}
+			]
+		},
+		{
+			"id": "2e94f8a6-4787-4a7d-b808-468e05becfa6",
+			"name": "09.1 Booking invalid dates (400)",
+			"url": "http://localhost:8080/api/booking",
+			"time": 15,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"400": true
+			},
+			"testPassFailCounts": {
+				"400": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				15
+			],
+			"allTests": [
+				{
+					"400": true
+				}
+			]
+		},
+		{
+			"id": "6c5b4739-d62f-414d-9d26-dd254239c6a1",
+			"name": "09.2 Recommend invalid dates (400)",
+			"url": "http://localhost:8080/api/rooms/recommend?start=2025-12-30&end=2025-12-25",
+			"time": 13,
+			"responseCode": {
+				"code": 400,
+				"name": "Bad Request"
+			},
+			"tests": {
+				"400": true
+			},
+			"testPassFailCounts": {
+				"400": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				13
+			],
+			"allTests": [
+				{
+					"400": true
+				}
+			]
+		},
+		{
+			"id": "6bbbd726-7235-434a-a17f-612831273240",
+			"name": "10.1 Gateway should not expose internal confirm endpoint (404)",
+			"url": "http://localhost:8080/api/rooms/10/confirm-availability",
+			"time": 41,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"404": true
+			},
+			"testPassFailCounts": {
+				"404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				41
+			],
+			"allTests": [
+				{
+					"404": true
+				}
+			]
+		},
+		{
+			"id": "8e3c7f28-816d-409d-a195-ee7dfc67e919",
+			"name": "10.2 Direct hotel-service confirm with USER token -> 403",
+			"url": "http://localhost:8082/api/rooms/10/confirm-availability",
+			"time": 6,
+			"responseCode": {
+				"code": 403,
+				"name": "Forbidden"
+			},
+			"tests": {
+				"403": true
+			},
+			"testPassFailCounts": {
+				"403": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				6
+			],
+			"allTests": [
+				{
+					"403": true
+				}
+			]
+		},
+		{
+			"id": "c6cbfb82-6ebd-415d-8f4d-a3dc5b73640f",
+			"name": "11.1 Register second user (gets token)",
+			"url": "http://localhost:8080/api/user/register",
+			"time": 93,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"200/201": true
+			},
+			"testPassFailCounts": {
+				"200/201": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				93
+			],
+			"allTests": [
+				{
+					"200/201": true
+				}
+			]
+		},
+		{
+			"id": "f3d12e54-3009-4609-ae50-de794901e715",
+			"name": "11.2 Second user cannot read first user booking (404)",
+			"url": "http://localhost:8080/api/booking/4",
+			"time": 17,
+			"responseCode": {
+				"code": 404,
+				"name": "Not Found"
+			},
+			"tests": {
+				"404": true
+			},
+			"testPassFailCounts": {
+				"404": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				17
+			],
+			"allTests": [
+				{
+					"404": true
+				}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 2831,
+	"collection": {
+		"requests": [
+			{
+				"id": "c5d56248-a047-4cc0-9fa1-bbaf499b74d6",
+				"method": "GET"
+			},
+			{
+				"id": "7f095456-92a9-4e66-9924-2a5fdc2bdf4f",
+				"method": "GET"
+			},
+			{
+				"id": "dc88873e-3080-45f2-b882-e082ded81e7d",
+				"method": "GET"
+			},
+			{
+				"id": "92c667ea-19b1-42f3-8715-405986070524",
+				"method": "GET"
+			},
+			{
+				"id": "9d76cab3-e2d5-4d55-b77c-f1dc82f7fc68",
+				"method": "POST"
+			},
+			{
+				"id": "e499db67-b5c8-4da9-9fd7-af62ba71e06e",
+				"method": "POST"
+			},
+			{
+				"id": "fb136f30-4747-4c4b-855f-03e3a42bde2f",
+				"method": "POST"
+			},
+			{
+				"id": "38c63657-9e3b-46d3-9624-3c53442d08a6",
+				"method": "GET"
+			},
+			{
+				"id": "4b7abd2d-634e-4791-81d4-22929e5c994c",
+				"method": "GET"
+			},
+			{
+				"id": "6a0b2bf7-2023-490f-b193-d7839581aaf6",
+				"method": "POST"
+			},
+			{
+				"id": "9f733ad2-ab7c-4f14-ba66-42a468fc217d",
+				"method": "GET"
+			},
+			{
+				"id": "9b45fcb8-423b-408e-8618-e3408bf6ecdc",
+				"method": "POST"
+			},
+			{
+				"id": "dc115486-c9bb-4878-ba43-2f907d5a647e",
+				"method": "GET"
+			},
+			{
+				"id": "f866b553-dafa-4dab-a331-d8c71e48f2b8",
+				"method": "PATCH"
+			},
+			{
+				"id": "90393ec9-c622-4931-86e5-7bbb94f6a087",
+				"method": "POST"
+			},
+			{
+				"id": "21b5fa6d-acc3-4d62-ba91-db77f4c77d13",
+				"method": "GET"
+			},
+			{
+				"id": "6eb4dd85-8864-4a6e-94d3-370730b73db2",
+				"method": "GET"
+			},
+			{
+				"id": "ce785efb-cd7a-4bcf-9431-d876ffa36e2e",
+				"method": "GET"
+			},
+			{
+				"id": "812b3495-92e6-4c90-b42a-636365f08401",
+				"method": "GET"
+			},
+			{
+				"id": "0cdd299c-ff5f-4e4c-a1b7-3802e3b97d50",
+				"method": "GET"
+			},
+			{
+				"id": "19939377-28c6-4424-9dd4-93e21a4970f6",
+				"method": "POST"
+			},
+			{
+				"id": "4cdca12e-f203-4734-b9dd-751e4e74fe2a",
+				"method": "GET"
+			},
+			{
+				"id": "c1151268-66c3-472e-b972-ead382031781",
+				"method": "GET"
+			},
+			{
+				"id": "fa58e034-8afe-4be4-b711-68cbad79c352",
+				"method": "GET"
+			},
+			{
+				"id": "c64b360b-2665-4085-a740-d9ade7baf4be",
+				"method": "POST"
+			},
+			{
+				"id": "a3f4736a-c49f-4770-9ce8-a1c4c272aa07",
+				"method": "GET"
+			},
+			{
+				"id": "b0b89a88-0521-4ec0-b572-be576c8d87f3",
+				"method": "GET"
+			},
+			{
+				"id": "acb8887f-bc6d-454e-9a70-5a79cb7935f0",
+				"method": "DELETE"
+			},
+			{
+				"id": "e7b2a343-c091-4b65-a23c-82769afc8154",
+				"method": "GET"
+			},
+			{
+				"id": "82ffb4d6-496d-4037-8c93-9877dba36db0",
+				"method": "GET"
+			},
+			{
+				"id": "52843939-ecfb-423d-8ba3-9f38e079da75",
+				"method": "POST"
+			},
+			{
+				"id": "e422371d-9b92-442f-82f3-50e4032c900e",
+				"method": "GET"
+			},
+			{
+				"id": "789fe21f-2e2a-46f0-bd06-fba70d0e1207",
+				"method": "POST"
+			},
+			{
+				"id": "cd1a0827-1d01-4e35-8e99-afffa3370b20",
+				"method": "POST"
+			},
+			{
+				"id": "15eb548f-b15c-4b65-b49d-d1dc4ff4b01c",
+				"method": "GET"
+			},
+			{
+				"id": "2e94f8a6-4787-4a7d-b808-468e05becfa6",
+				"method": "POST"
+			},
+			{
+				"id": "6c5b4739-d62f-414d-9d26-dd254239c6a1",
+				"method": "GET"
+			},
+			{
+				"id": "6bbbd726-7235-434a-a17f-612831273240",
+				"method": "POST"
+			},
+			{
+				"id": "8e3c7f28-816d-409d-a195-ee7dfc67e919",
+				"method": "POST"
+			},
+			{
+				"id": "c6cbfb82-6ebd-415d-8f4d-a3dc5b73640f",
+				"method": "POST"
+			},
+			{
+				"id": "f3d12e54-3009-4609-ae50-de794901e715",
+				"method": "GET"
+			}
+		]
+	}
+}

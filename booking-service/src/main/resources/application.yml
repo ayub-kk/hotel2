@@ -1,0 +1,51 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: booking-service
+
+  datasource:
+    url: jdbc:h2:mem:booking-db;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  # Инициализацию тестовых данных делаю через BookingDataInitializer (ApplicationRunner).
+  sql:
+    init:
+      mode: never
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:very-secret-jwt-key-for-mifi-final-project}
+    ttl: 3600 # seconds (1 hour)
+    service-ttl: 300
+
+services:
+  hotel-service:
+    # В прод-подобном запуске лучше ходить по имени сервиса через Eureka + LoadBalancer.
+    # Для локального прогона без Eureka можно переопределить переменной окружения.
+    base-url: ${HOTEL_SERVICE_BASE_URL:http://hotel-service}
+    connect-timeout-ms: 2000
+    read-timeout-ms: 3000
+    retry:
+      max-attempts: 3
+      backoff-ms: 200,500,1000
